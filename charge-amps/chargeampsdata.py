@@ -144,3 +144,23 @@ class ChargeAmpsUser:
     mobile: str
     rfidTags: list[RFIDTag]
     userStatus: str
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(frozen=True)
+class StartAuth:
+    rfid_length: int
+    rfid_format: str
+    rfid: str
+    external_transaction_id: str
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(frozen=True)
+class ChargePointAuth:
+    chargePointId: str
+    password: str
+    chargePointName: str
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(frozen=True)
+class ChargePointIds:
+    chargePointId: list[str]

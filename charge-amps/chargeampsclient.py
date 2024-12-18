@@ -19,7 +19,8 @@ from chargeampsdata import (UserStatus,ChargePointConnector,
                             ChargePointConnectorSettings, ChargePointPartner, 
                             ChargePointStatus, ChargePointMeasurement, 
                             ChargePointConnectorStatus, ChargePointScheduleOverrideStatus, 
-                            ChargePointSchedule, ChargeAmpsUser)
+                            ChargePointSchedule, ChargeAmpsUser, StartAuth,
+                            ChargePointAuth, ChargePointIds)
 
 API_BASE_URL = "https://eapi.charge.space"
 API_VERSION = "v5"
@@ -233,6 +234,11 @@ class Session:
         await self._get_token()
         headers = kwargs.pop("headers", self._headers)
         return await self._csession.put(urljoin(self._base_url, path), ssl=self._ssl, headers=headers, **kwargs)
+
+    async def _delete(self, path, **kwargs) -> ClientResponse:
+        await self._get_token()
+        headers = kwargs.pop("headers", self._headers)
+        return await self._csession.delete(urljoin(self._base_url, path), ssl=self._ssl, headers=headers, **kwargs)
     
     async def get_chargepoints(self) -> list[ChargePoint]:
         """Get all owned chargepoints"""
@@ -379,4 +385,81 @@ class Session:
         response = await self._get(request_uri)
         payload = await response.json()
         return ChargeAmpsUser.from_dict(payload)
+    
+    async def set_chargepoint_settings(self, settings: ChargePointSettings) -> None:
+        """Set chargepoint settings"""
+        payload = settings.to_dict()
+        charge_point_id = settings.id
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/settings"
+        await self._put(request_uri, json=payload)
+    
+    async def set_chargepoint_connector_settings(self, settings: ChargePointConnectorSettings) -> None:
+        """Get all owned chargepoints"""
+        payload = settings.to_dict()
+        charge_point_id = settings.charge_point_id
+        connector_id = settings.connector_id
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/settings"
+        await self._put(request_uri, json=payload)
+
+    async def set_chargepoint_schedule_override(self, charge_point_id: str, connector_id: int) -> None:
+        """override chargepoint schedule"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/schedule/override"
+        await self._put(request_uri, json="{}")
+
+    async def remote_start(self, charge_point_id: str, connector_id: int, start_auth: StartAuth) -> None:
+        """Remote start chargepoint"""
+        payload = start_auth.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/remotestart"
+        await self._put(request_uri, json=payload)
+
+    async def remote_stop(self, charge_point_id: str, connector_id: int) -> None:
+        """Remote stop chargepoint"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/remotestop"
+        await self._put(request_uri, json="{}")
+
+    async def reboot(self, charge_point_id: str) -> None:
+        """Reboot chargepoint"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/reboot"
+        await self._put(request_uri, json="{}")
+
+    async def register(self, charge_point_id: str, chrg_point_auth: ChargePointAuth) -> None:
+        """Register chargepoint to auth user"""
+        payload = chrg_point_auth.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/register"
+        await self._put(request_uri, json=payload)
+
+    async def update_schedule(self, charge_point_id: str, chrg_schedule: ChargePointSchedule) -> None:
+        """Update charge schedules. For CAPI charger only"""
+        payload = chrg_schedule.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/schedules"
+        await self._put(request_uri, json=payload)
+
+    async def register(self, charge_point_id: str, chrg_point_auth: ChargePointAuth) -> None:
+        """Unregister chargepoint from user"""
+        payload = chrg_point_auth.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/unregister"
+        await self._put(request_uri, json=payload)
+
+    async def disable(self, chrg_point_ids: ChargePointIds) -> None:
+        """Disable callback on chargepoints"""
+        payload = chrg_point_ids.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/callbacks/disable"
+        await self._put(request_uri, json=payload)
+    
+    async def enable(self, chrg_point_ids: ChargePointIds) -> None:
+        """Enable callback on chargepoints"""
+        payload = chrg_point_ids.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/callbacks/enable"
+        await self._put(request_uri, json=payload)
+
+    async def create_schedule(self, charge_point_id: str, chrg_schedule: ChargePointSchedule) -> None:
+        """create charge schedules. For CAPI charger only"""
+        payload = chrg_schedule.to_dict()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/schedules"
+        await self._post(request_uri, json=payload)
+
+    async def delete_schedule(self, charge_point_id: str, schedule_id:int) -> None:
+        """Delete charge schedules. For CAPI charger only"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/schedules/{schedule_id}"
+        await self._delete(request_uri, json="{}")
     
