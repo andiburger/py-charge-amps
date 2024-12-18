@@ -163,3 +163,4 @@ cython_debug/
 
 # application specific
 mycfg.ini
+~$*.xlsx

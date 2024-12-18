@@ -11,5 +11,5 @@ class ChargeAmpsCfgParser:
         return {"email":self.__config["USERDATA"]["email"], "password":self.__config["USERDATA"]["password"], "apiKey":self.__config["USERDATA"]["apiKey"]}
     
     def get_general_data(self)->dict:
-        return {"baseUrl":self.__config["GENERAL"]["baseUrl"]}
+        return {"baseUrl":self.__config["GENERAL"]["baseUrl"],"pricekWh":self.__config["GENERAL"]["pricekWh"]}
     
