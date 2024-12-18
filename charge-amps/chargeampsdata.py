@@ -27,14 +27,21 @@ class ChargePoint:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargingSession:
-    id: str
+    id: int
     charge_point_id: str
     connector_id: int
+    user_id: str
+    rfid: str
+    rfidDec: str
+    rfidDecReverse: str 
+    organisationId: str | None
     session_type: str
     total_consumption_kwh: float
+    externalTransactionId: str | None
+    externalId: str | None
     start_time: datetime | None = datetime_field()
     end_time: datetime | None = datetime_field()
-
+    
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointSettings:

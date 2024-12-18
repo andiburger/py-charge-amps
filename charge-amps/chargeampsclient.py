@@ -100,6 +100,15 @@ class Client:
         end_time: datetime | None = None) -> list[ChargingSession]:
         return await self._session.get_specific_chargingsession(charge_point_id=charge_point_id,session_id=session_id,start_time=start_time,end_time=end_time)
 
+    async def get_rfid_chargingsessions(
+        self,
+        charge_point_id: str,
+        connector_id: int,
+        rfid: str,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        return await self._session.get_rfid_chargingsessions(charge_point_id=charge_point_id,connector_id=connector_id,rfid=rfid,start_time=start_time,end_time=end_time)
+
     async def get_chargepoint_connector_settings(self, charge_point_id: str, connector_id: int) -> ChargePointConnectorSettings:
         return await self._session.get_chargepoint_connector_settings(charge_point_id=charge_point_id, connector_id=connector_id)
     
@@ -258,6 +267,28 @@ class Session:
         res = []
         for session in await response.json():
             res.append(ChargingSession.from_dict(session))
+        return res
+    
+    async def get_rfid_chargingsessions(
+        self,
+        charge_point_id: str,
+        connector_id: int,
+        rfid: str,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        """Get all charging sessions of a specific connector"""
+        query_params = {}
+        if start_time:
+            query_params["startTime"] = start_time.isoformat()
+        if end_time:
+            query_params["endTime"] = end_time.isoformat()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/chargingsessions"
+        response = await self._get(request_uri, params=query_params)
+        res = []
+        for session in await response.json():
+            chrgSession = ChargingSession.from_dict(session)
+            if chrgSession.rfid == rfid:
+                res.append(chrgSession)
         return res
     
     async def get_chargingsessions(
