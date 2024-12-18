@@ -2,7 +2,6 @@
 Python client class for charge amps.
 This module holds the connection to the cloud backend and refreshes the connection when needed.
 """
-from enum import Enum
 from aiohttp import ClientResponse, ClientSession
 from aiohttp.web import HTTPException
 
@@ -10,17 +9,20 @@ import logging
 import time
 import jwt
 
-from dataclasses import dataclass
 from datetime import datetime
 from urllib.parse import urljoin
 
+from utils import datetime_field
+
+from chargeampsdata import (UserStatus,ChargePointConnector, 
+                            ChargePoint, ChargingSession, ChargePointSettings, 
+                            ChargePointConnectorSettings, ChargePointPartner, 
+                            ChargePointStatus, ChargePointMeasurement, 
+                            ChargePointConnectorStatus, ChargePointScheduleOverrideStatus, 
+                            ChargePointSchedule, ChargeAmpsUser)
+
 API_BASE_URL = "https://eapi.charge.space"
 API_VERSION = "v5"
-
-class UserStatus(Enum):
-    Valid = 1
-    Invaild = 2
-    Undef = 3
 
 class User:
     def __init__(self,
@@ -47,16 +49,8 @@ class User:
         self._lastName = user_info["lastName"]
         self._mobile = user_info["mobile"]
         self._rfidTags = user_info["rfidTags"]
-        self._userStatus = self.__get_user_status(user_info["userStatus"])
+        self._userStatus = UserStatus[user_info["userStatus"]]
         return True
-
-    def __get_user_status(self, status)->UserStatus:
-        if status == "Valid":
-            return UserStatus.Valid
-        elif status == "Invalid":
-            return UserStatus.Invaild
-        else:
-            return UserStatus.Undef
 
 class Client:
     def __init__(self,
@@ -76,6 +70,56 @@ class Client:
 
     async def close_session(self)->None:
         await self._session.shutdown()
+    
+    async def get_chargepoints(self) -> list[ChargePoint]:
+       return await self._session.get_chargepoints()
+    
+    async def get_chargepoint_status(self, charge_point_id: str) -> ChargePointStatus:
+        return await self._session.get_chargepoint_status(charge_point_id)
+    
+    async def get_connector_chargingsessions(
+        self,
+        charge_point_id: str,
+        connector_id: int,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        return await self._session.get_connector_chargingsessions(charge_point_id=charge_point_id,connector_id=connector_id,start_time=start_time,end_time=end_time)
+
+    async def get_chargingsessions(
+        self,
+        charge_point_id: str,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        return await self._session.get_chargingsessions(charge_point_id=charge_point_id,start_time=start_time,end_time=end_time)
+    
+    async def get_specific_chargingsession(
+        self,
+        charge_point_id: str,
+        session_id: int,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        return await self._session.get_specific_chargingsession(charge_point_id=charge_point_id,session_id=session_id,start_time=start_time,end_time=end_time)
+
+    async def get_chargepoint_connector_settings(self, charge_point_id: str, connector_id: int) -> ChargePointConnectorSettings:
+        return await self._session.get_chargepoint_connector_settings(charge_point_id=charge_point_id, connector_id=connector_id)
+    
+    async def get_chargepoint_settings(self, charge_point_id: str) -> ChargePointSettings:
+        return await self._session.get_chargepoint_settings(charge_point_id=charge_point_id)
+    
+    async def get_chargepoint_partner(self, charge_point_id: str) -> ChargePointPartner:
+        return await self._session.get_chargepoint_partner(charge_point_id=charge_point_id)
+    
+    async def get_chargepoint_override_status(self, charge_point_id: str) -> ChargePointScheduleOverrideStatus:
+        return await self._session.get_chargepoint_override_status(charge_point_id=charge_point_id)
+    
+    async def get_chargepoint_schedules(self, charge_point_id: str) -> list[ChargePointSchedule]:
+        return await self._session.get_chargepoint_schedules(charge_point_id=charge_point_id)
+    
+    async def get_chargepoint_schedule(self, charge_point_id: str, schedule_id:int) -> ChargePointSchedule:
+        return await self._session.get_chargepoint_schedule(charge_point_id=charge_point_id,schedule_id=schedule_id)
+    
+    async def get_user(self, user_id:str) -> ChargeAmpsUser:
+        return await self._session.get_user(user_id=user_id)
 
 class Session:
     def __init__(self, 
@@ -91,13 +135,14 @@ class Session:
         self._ssl = False
         self._token_expire = 0
         self._user = user
+        self._csession = None
     
     async def shutdown(self) -> None:
         await self._csession.close()
 
     async def init_session(self)->None:
         self._csession = ClientSession(raise_for_status=True)
-        await self._init_token()
+        await self._get_token()
         return None
 
     def get_user_info(self)->dict:
@@ -105,7 +150,7 @@ class Session:
             return self.__lastresponse["user"]
         return None
 
-    async def _init_token(self)->None:
+    async def _get_token(self)->None:
         if self._token_expire > time.time():
             return
 
@@ -165,6 +210,142 @@ class Session:
 
         self._headers["Authorization"] = f"Bearer {self._token}"
         
+    async def _post(self, path, **kwargs) -> ClientResponse:
+        await self._get_token()
+        headers = kwargs.pop("headers", self._headers)
+        return await self._csession.post(urljoin(self._base_url, path), ssl=self._ssl, headers=headers, **kwargs)
 
+    async def _get(self, path, **kwargs) -> ClientResponse:
+        await self._get_token()
+        headers = kwargs.pop("headers", self._headers)
+        return await self._csession.get(urljoin(self._base_url, path), ssl=self._ssl, headers=headers, **kwargs)
 
+    async def _put(self, path, **kwargs) -> ClientResponse:
+        await self._get_token()
+        headers = kwargs.pop("headers", self._headers)
+        return await self._csession.put(urljoin(self._base_url, path), ssl=self._ssl, headers=headers, **kwargs)
+    
+    async def get_chargepoints(self) -> list[ChargePoint]:
+        """Get all owned chargepoints"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/owned"
+        response = await self._get(request_uri)
+        res = []
+        for chargepoint in await response.json():
+            res.append(ChargePoint.from_dict(chargepoint))
+        return res
+    
+    async def get_chargepoint_status(self, charge_point_id: str) -> ChargePointStatus:
+        """Get charge point status"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/status"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargePointStatus.from_dict(payload)
 
+    async def get_connector_chargingsessions(
+        self,
+        charge_point_id: str,
+        connector_id: int,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        """Get all charging sessions of a specific connector"""
+        query_params = {}
+        if start_time:
+            query_params["startTime"] = start_time.isoformat()
+        if end_time:
+            query_params["endTime"] = end_time.isoformat()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/chargingsessions"
+        response = await self._get(request_uri, params=query_params)
+        res = []
+        for session in await response.json():
+            res.append(ChargingSession.from_dict(session))
+        return res
+    
+    async def get_chargingsessions(
+        self,
+        charge_point_id: str,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        """Get all charging sessions"""
+        query_params = {}
+        if start_time:
+            query_params["startTime"] = start_time.isoformat()
+        if end_time:
+            query_params["endTime"] = end_time.isoformat()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/chargingsessions"
+        response = await self._get(request_uri, params=query_params)
+        res = []
+        for session in await response.json():
+            res.append(ChargingSession.from_dict(session))
+        return res
+    
+    async def get_specific_chargingsession(
+        self,
+        charge_point_id: str,
+        session_id: int,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None) -> list[ChargingSession]:
+        """Get all charging sessions of a specific connector"""
+        query_params = {}
+        if start_time:
+            query_params["startTime"] = start_time.isoformat()
+        if end_time:
+            query_params["endTime"] = end_time.isoformat()
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/chargingsessions/{session_id}"
+        response = await self._get(request_uri, params=query_params)
+        res = []
+        for session in await response.json():
+            res.append(ChargingSession.from_dict(session))
+        return res
+    
+    async def get_chargepoint_connector_settings(self, charge_point_id: str, connector_id: int) -> ChargePointConnectorSettings:
+        """Get all owned chargepoints"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/connectors/{connector_id}/settings"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargePointConnectorSettings.from_dict(payload)
+    
+    async def get_chargepoint_settings(self, charge_point_id: str) -> ChargePointSettings:
+        """Get chargepoint settings"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/settings"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargePointSettings.from_dict(payload)
+    
+    async def get_chargepoint_partner(self, charge_point_id: str) -> ChargePointPartner:
+        """Get chargepoint settings"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/partner"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargePointPartner.from_dict(payload)
+    
+    async def get_chargepoint_override_status(self, charge_point_id: str) -> ChargePointScheduleOverrideStatus:
+        """Get chargepoint settings"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/schedule/override/status"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargePointScheduleOverrideStatus.from_dict(payload)
+    
+    async def get_chargepoint_schedules(self, charge_point_id: str) -> list[ChargePointSchedule]:
+        """Get chargepoint settings"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/schedules"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        res = []
+        for session in await response.json():
+            res.append(ChargePointSchedule.from_dict(session))
+        return res
+    
+    async def get_chargepoint_schedule(self, charge_point_id: str, schedule_id:int) -> ChargePointSchedule:
+        """Get chargepoint settings"""
+        request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/schedules/{schedule_id}"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargePointSchedule.from_dict(payload)
+    
+    async def get_user(self, user_id:str) -> ChargeAmpsUser:
+        """Get chargepoint settings"""
+        request_uri = f"/api/{API_VERSION}/users/{user_id}"
+        response = await self._get(request_uri)
+        payload = await response.json()
+        return ChargeAmpsUser.from_dict(payload)
+    
