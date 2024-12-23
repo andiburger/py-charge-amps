@@ -2,6 +2,7 @@ import xlsxwriter
 import time
 from chargeampsdata import ChargingSession
 from datetime import datetime
+import os
 
 class XlsxResult:
 
@@ -10,7 +11,15 @@ class XlsxResult:
     
     def gen_output_file(self, charge_sessions: list[ChargingSession], kwh_price:float)->bool:
         timestr = time.strftime("%Y%m%d")
-        workbook = xlsxwriter.Workbook("../output/result_"+timestr+".xlsx") # Todo add handling if file already exist
+        base_filename = f"../output/result_{timestr}"
+        file_path = f"{base_filename}.xlsx"
+        
+        counter = 1
+        while os.path.exists(file_path):
+            file_path = f"{base_filename}_{counter}.xlsx"
+            counter += 1
+        
+        workbook = xlsxwriter.Workbook(file_path)
         worksheet = workbook.add_worksheet("Charging Summary")
         #Formats
         header_format = workbook.add_format({'align':'center','bold':True,'bottom':True,'border':2})
@@ -39,12 +48,9 @@ class XlsxResult:
             worksheet._write_formula(row,6,"=E"+str(row+1)+"*"+"F"+str(row+1)+"/100",euros)
             row+=1
             idx+=1
+        worksheet.write_string(row,5,"Total Costs",header_format)
+        worksheet._write_formula(row,6,"=SUM(G2:G"+str(idx-1)+")",header_format)
 
-
-        #todo add total costs
-        #todo add charging duration as separate column
-        #todo add description to rfid tag?
-        #todo general enrich cfg file with rfid tag infos...
         workbook.close()
         return True
     
