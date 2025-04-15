@@ -12,6 +12,7 @@ async def index():
         rfid = request.form["rfid"]
         start_date =  datetime.strptime(request.form["start_date"], "%Y-%m-%d")
         end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d")
+        path = request.form["save_location"]
         print(f"RFID: {rfid}, Start: {start_date}, End: {end_date}")
         cfgParser = ChargeAmpsCfgParser("../mycfg.ini")
         userData = cfgParser.get_user_data()
@@ -24,7 +25,7 @@ async def index():
             connector_id = 1
             charging_sessions = await myclient.get_rfid_chargingsessions(charge_point_id=chargePoint.id, connector_id=connector_id, rfid=rfid, start_time=start_date, end_time=end_date)
             result_writer = XlsxResult()
-            result_writer.gen_output_file(charging_sessions, general_data["pricekWh"])
+            result_writer.gen_output_file(charging_sessions, general_data["pricekWh"],path)
     return render_template("index.html")
 
 if __name__ == "__main__":

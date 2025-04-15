@@ -9,9 +9,9 @@ class XlsxResult:
     def __init__(self):
         return None
     
-    def gen_output_file(self, charge_sessions: list[ChargingSession], kwh_price:float)->bool:
+    def gen_output_file(self, charge_sessions: list[ChargingSession], kwh_price:float, path:str)->bool:
         timestr = time.strftime("%Y%m%d")
-        base_filename = f"../output/result_{timestr}"
+        base_filename = path+f"/result_{timestr}"
         file_path = f"{base_filename}.xlsx"
         
         counter = 1
