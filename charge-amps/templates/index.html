@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChargeAMPs Extractor</title>
+  <link rel="icon" type="image/png" href="/static/logo.png">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url("/static/webbannergrey.svg") no-repeat center center fixed;
+      background-size: cover;
+      color: #333;
+    }
+
+    .overlay {
+        background-color: transparent; /* beige transparent */
+      min-height: 100vh;
+      padding: 2em;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #e0e0e0; /* light grey */
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(50, 50, 50, 0.1);
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 1em;
+      max-width: 150px;
+    }
+
+    .banner {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 1em;
+    }
+
+    label {
+      display: block;
+      margin-top: 1em;
+      margin-bottom: 0.3em;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 0.6em;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    button {
+      margin-top: 2em;
+      width: 100%;
+      padding: 0.8em;
+      font-size: 1.1em;
+      background-color: #bfae9d;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #a79584;
+    }
+
+    .browse-button {
+  padding: 0.6em 1.2em;
+  background-color: #bfae9d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  width: auto;
+  display: inline-block;
+  margin-top: 0.5em;
+}
+
+.browse-button:hover {
+  background-color: #a79584;
+}
+  </style>
+  <script>
+   document.addEventListener("DOMContentLoaded", function () {
+    const picker = document.getElementById("folder_picker");
+    const saveInput = document.getElementById("save_location");
+
+    picker.addEventListener("change", function () {
+      if (picker.files.length > 0) {
+        // Versuche, Pfad aus erster Datei zu extrahieren
+        const firstFile = picker.files[0];
+
+        let folderPath = "";
+        if ("webkitRelativePath" in firstFile) {
+          const pathParts = firstFile.webkitRelativePath.split("/");
+          pathParts.pop(); // entferne Dateiname
+          folderPath = pathParts.join("/");
+        } else {
+          folderPath = "Folder selected (path unavailable)";
+        }
+
+        saveInput.value = folderPath;
+      }
+    });
+  });
+  </script>
+</head>
+<body>
+  <div class="overlay">
+    <img src="/static/banner.png" alt="Banner" class="banner">
+
+    <div class="container">
+      <form method="POST">
+        <label for="rfid">RFID Tag</label>
+        <input type="text" id="rfid" name="rfid" required>
+
+        <label for="start_date">Start Date</label>
+        <input type="date" id="start_date" name="start_date" required>
+
+        <label for="end_date">End Date</label>
+        <input type="date" id="end_date" name="end_date" required>
+
+        <label for="save_location">Save Location</label>
+        <input type="text" id="save_location" name="save_location"
+            placeholder="Select a folder..." readonly
+            style="width: 100%; padding: 0.6em; border-radius: 5px; border: 1px solid #aaa;">
+
+        <!-- Button unterhalb -->
+        <button type="button" class="browse-button" onclick="document.getElementById('folder_picker').click()">
+        Browse
+        </button>
+
+        <!-- Unsichtbarer Folder-Picker -->
+        <input type="file" id="folder_picker" style="display: none;" webkitdirectory mozdirectory>
+
+        <button type="submit">Start</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
