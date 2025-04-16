@@ -24,6 +24,8 @@ from chargeampsdata import (UserStatus,ChargePointConnector,
 
 API_BASE_URL = "https://eapi.charge.space"
 API_VERSION = "v5"
+UNUSED_RFID_SLOT = "00000000000000"
+
 
 class User:
     def __init__(self,
@@ -130,6 +132,9 @@ class Client:
     
     async def get_user(self, user_id:str) -> ChargeAmpsUser:
         return await self._session.get_user(user_id=user_id)
+    
+    async def get_registered_rfid_tags(self, charge_point_id: str) -> list:
+        return await self._session.get_registered_rfid_tags(charge_point_id=charge_point_id)
 
 class Session:
     def __init__(self, 
@@ -249,6 +254,15 @@ class Session:
             res.append(ChargePoint.from_dict(chargepoint))
         return res
     
+    async def get_registered_rfid_tags(self, charge_point_id: str) -> list:
+        """Get all registered RFID tags for a specific charge point."""
+        charging_sessions = await self.get_chargingsessions(charge_point_id)
+        rfid_tags = []
+        for c_session in charging_sessions:
+            if c_session.rfid not in rfid_tags and c_session.rfid != UNUSED_RFID_SLOT:
+                rfid_tags.append(c_session.rfid)
+        return rfid_tags
+
     async def get_chargepoint_status(self, charge_point_id: str) -> ChargePointStatus:
         """Get charge point status"""
         request_uri = f"/api/{API_VERSION}/chargepoints/{charge_point_id}/status"

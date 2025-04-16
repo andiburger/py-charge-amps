@@ -3,23 +3,25 @@ import time
 from chargeampsdata import ChargingSession
 from datetime import datetime
 import os
+from io import BytesIO
 
 class XlsxResult:
 
     def __init__(self):
+        """
+        Initialize the XlsxResult class."""
         return None
     
-    def gen_output_file(self, charge_sessions: list[ChargingSession], kwh_price:float, path:str)->bool:
-        timestr = time.strftime("%Y%m%d")
-        base_filename = path+f"/result_{timestr}"
-        file_path = f"{base_filename}.xlsx"
+    def gen_output_file(self, charge_sessions: list[ChargingSession], kwh_price:float)->BytesIO:
+        """
+        Generates an xlsx file with the charging sessions data.
+        :param charge_sessions: List of ChargingSession objects
+        :param kwh_price: Price per kWh in cents
+        :return: BytesIO object containing the xlsx file
+        """
+        output = BytesIO()
         
-        counter = 1
-        while os.path.exists(file_path):
-            file_path = f"{base_filename}_{counter}.xlsx"
-            counter += 1
-        
-        workbook = xlsxwriter.Workbook(file_path)
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Charging Summary")
         #Formats
         header_format = workbook.add_format({'align':'center','bold':True,'bottom':True,'border':2})
@@ -52,5 +54,6 @@ class XlsxResult:
         worksheet._write_formula(row,6,"=SUM(G2:G"+str(idx-1)+")",header_format)
 
         workbook.close()
-        return True
+        output.seek(0)
+        return output
     

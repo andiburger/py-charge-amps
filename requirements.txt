@@ -1,0 +1,8 @@
+flask[async]
+xlsxwriter
+openpyxl
+aiohttp
+hypercorn
+PyJWT
+ciso8601
+dataclasses_json

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChargeAMPs Extractor</title>
+  <link rel="icon" type="image/png" href="/static/logo.png">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url("/static/webbannergrey.svg") no-repeat center center fixed;
+      background-size: cover;
+      color: #333;
+    }
+
+    .overlay {
+        background-color: transparent; /* beige transparent */
+      min-height: 100vh;
+      padding: 2em;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #e0e0e0; /* light grey */
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(50, 50, 50, 0.1);
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 1em;
+      max-width: 150px;
+    }
+
+    .banner {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 1em;
+    }
+
+    label {
+      display: block;
+      margin-top: 1em;
+      margin-bottom: 0.3em;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 0.6em;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    button {
+      margin-top: 2em;
+      width: 100%;
+      padding: 0.8em;
+      font-size: 1.1em;
+      background-color: #bfae9d;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #a79584;
+    }
+
+    .small-button {
+      padding: 0.4em 0.6em;
+      font-size: 0.9em;
+      background-color: #bfae9d;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 0.5em;
+      white-space: nowrap;
+      max-width: 100px;
+      flex-shrink: 0;
+    }
+
+    .small-button:hover {
+      background-color: #a79584;
+    }
+  </style>
+</head>
+<script>
+  function getRfidTags() {
+    fetch("/get_rfid_tags", { method: "POST" })
+      .then(response => response.json())
+      .then(data => {
+        const selector = document.getElementById("rfid_selector");
+        selector.innerHTML = "";
+
+        if (data.tags && data.tags.length > 0) {
+          data.tags.forEach(tag => {
+            const option = document.createElement("option");
+            option.value = tag;
+            option.text = tag;
+            selector.appendChild(option);
+          });
+
+          selector.style.display = "block";
+
+          // Beim ersten Klick setzen
+          selector.addEventListener("change", function () {
+            document.getElementById("rfid").value = this.value;
+          });
+        } else {
+          selector.style.display = "none";
+        }
+      })
+      .catch(error => {
+        alert("Error retrieving RFID tags");
+        console.error(error);
+      });
+  }
+  // Event listener for form submission
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function () {
+      // Wait for 1 second before resetting the form
+      setTimeout(() => {
+        this.reset();
+
+        // Hide the RFID selector and clear its options
+        const rfidSelector = document.getElementById("rfid_selector");
+        if (rfidSelector) {
+          rfidSelector.style.display = "none";
+          rfidSelector.innerHTML = "";
+        }
+      }, 1000); // 1000 milliseconds = 1 second
+    });
+
+    // Hide calendar picker after selecting a date
+    const startDateInput = document.getElementById("start_date");
+    const endDateInput = document.getElementById("end_date");
+
+    startDateInput.addEventListener("change", function () {
+      this.blur();
+    });
+
+    endDateInput.addEventListener("change", function () {
+      this.blur();
+    });
+  });
+
+</script>
+<body>
+  <div class="overlay">
+    <img src="/static/banner.png" alt="Banner" class="banner">
+
+    <div class="container">
+      <form method="POST">
+        <label for="rfid">RFID Tag</label>
+        <div style="display: flex; gap: 0.5em; align-items: center;">
+          <input type="text" id="rfid" name="rfid" required style="flex: 1;">
+          <button type="button" class="small-button" onclick="getRfidTags()">Get RFID Tags</button>
+        </div>
+
+        <!-- Dropdown zum Anzeigen der geladenen Tags -->
+        <select id="rfid_selector" style="display: none; margin-top: 0.5em; width: 100%; padding: 0.5em;"></select>
+
+        <label for="start_date">Start Date</label>
+        <input type="date" id="start_date" name="start_date" required>
+
+        <label for="end_date">End Date</label>
+        <input type="date" id="end_date" name="end_date" required>
+
+        <button type="submit">Start</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
