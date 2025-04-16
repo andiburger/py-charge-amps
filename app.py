@@ -47,7 +47,7 @@ async def get_rfid_tags():
     if chargePoints:
         chargePoint = chargePoints[0]
         rfid_tags = await myclient.get_registered_rfid_tags(chargePoint.id)
-        myclient.close_session()
+        await myclient.close_session()
         return jsonify({"tags": rfid_tags})
     await myclient.close_session()
     return jsonify({"error": "No charge points found."})
