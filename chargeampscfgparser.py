@@ -4,7 +4,7 @@ import configparser
 class ChargeAmpsCfgParser:
     def __init__(self, cfgFile:str = None):
         self.__config = configparser.ConfigParser()
-        self.__config.read(cfgFile or "../cfg.ini")
+        self.__config.read(cfgFile or "cfg.ini")
         return None
     
     def get_user_data(self)->dict:

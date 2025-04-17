@@ -52,6 +52,9 @@ class TestPyChargeAmpsAPI(unittest.IsolatedAsyncioTestCase):
                 self.assertGreater(len(charging_sessions),0)
                 result_writer = XlsxResult()
                 result_writer.gen_output_file(charging_sessions,general_data["pricekWh"])
+                user = await myclient.get_user(myclient._user._userid) 
+                print(user)
+                self.assertEqual(user.email,userData["email"])
             await myclient.close_session()
 
 
