@@ -70,6 +70,39 @@ templates/index.html     # HTML template for form
 mycfg.ini                # User and API configuration
 ```
 
+## Running with Docker
+
+This project includes a multi-stage `Dockerfile` for building and running the application in a lightweight container.
+
+### Build the Docker image
+
+From the root of the project directory, run:
+
+```bash
+docker build -t py-charge-amps .
+```
+
+This builds the image using:
+- Build stage: Installs all Python dependencies into a minimal install directory using Alpine Linux.
+- inal stage: Copies only the necessary files and dependencies into the final image.
+
+## Run the container
+
+You can run the container with:
+```bash
+docker run -p 5000:5000 --env-file .env py-charge-amps
+```
+
+Alternatively, if you need to bind a local mycfg.ini file into the container:
+```bash
+docker run -p 5000:5000 -v $(pwd)/mycfg.ini:/app/mycfg.ini py-charge-amps
+```
+
+## Notes
+- The app listens on port 5000 by default.
+- hypercorn is used as the ASGI server.
+- You can configure credentials and settings via mycfg.ini, which should be present in the working directory or mounted as a volume.
+
 ## License
 
 MIT License. See LICENSE file for details.
