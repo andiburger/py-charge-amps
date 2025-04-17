@@ -1,17 +1,18 @@
-FROM python:3.13-alpine
+# --- Build stage ---
+FROM python:3.13-alpine AS build
 
 RUN apk add --no-cache gcc musl-dev python3-dev libffi-dev
-# Set working directory
+
 WORKDIR /app
-
-# Copy files
 COPY . /app
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# --- Final stage ---
+FROM python:3.13-alpine
 
-# Expose port
+WORKDIR /app
+COPY . /app
+COPY --from=build /install /usr/local
+
 EXPOSE 5000
-
-# Start with Hypercorn (async production server)
 CMD ["sh", "-c", "hypercorn app:app --bind 0.0.0.0:5000"]
