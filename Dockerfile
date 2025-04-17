@@ -1,6 +1,6 @@
-FROM python:3.13-slim
+FROM python:3.13-alpine
 
-RUN apt-get update && apt-get install -y gcc python3-dev
+RUN apk add --no-cache gcc musl-dev python3-dev libffi-dev
 # Set working directory
 WORKDIR /app
 
@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # Start with Hypercorn (async production server)
-CMD ["hypercorn", "app:app", "--bind", "0.0.0.0:5000"]
+CMD ["sh", "-c", "hypercorn app:app --bind 0.0.0.0:5000"]
