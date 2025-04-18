@@ -6,6 +6,8 @@ import os
 from io import BytesIO
 
 class XlsxResult:
+    """
+    Class to generate an xlsx file with charging sessions data."""
 
     def __init__(self):
         """
