@@ -1,10 +1,16 @@
 from chargeampsclient import Client
 from chargeampscfgparser import ChargeAmpsCfgParser
 from xlsxresultwriter import XlsxResult
+from utils.utils import get_or_create_encryption_key, decrypt
 
 import unittest
 
 class TestCfgLoader(unittest.TestCase):
+
+
+    def setUp(self):
+        self.key = get_or_create_encryption_key()
+        self.assertIsNotNone(self.key, "Encryption key should not be None")
 
     def testCfg1(self):
         """Test1 configuration reader"""
@@ -16,7 +22,7 @@ class TestCfgLoader(unittest.TestCase):
         """Test2 configuration reader"""
         cfgParser = ChargeAmpsCfgParser("../mycfg.ini")
         userData = cfgParser.get_user_data()
-        self.assertEqual(userData["email"], "andiburger@gmail.com")
+        self.assertEqual(userData["email"], "gAAAAABoB9PepOgdxVn8UklN3Z-9ofOp71qVF0du3r651xRlSY2n9c5WyK6wBPC6xEx6hXNSuy4enBChHYrW0I6fnk6Fk5T99_XnyKf7luERp1UhNDD3jXo=")
     
     def testCfg3(self):
         """Test2 configuration reader"""
@@ -25,12 +31,16 @@ class TestCfgLoader(unittest.TestCase):
         self.assertIn('pricekWh',general_data.keys())
 
 class TestPyChargeAmpsAPI(unittest.IsolatedAsyncioTestCase):
+        def setUp(self):
+            self.key = get_or_create_encryption_key()
+            self.assertIsNotNone(self.key, "Encryption key should not be None")
+
         async def testAPI(self):
             """Test Python API for ChargeAMPs"""
             cfgParser = ChargeAmpsCfgParser("../mycfg.ini")
             userData = cfgParser.get_user_data()
             general_data= cfgParser.get_general_data()
-            myclient = Client(userData["email"],userData["password"],userData["apiKey"],general_data["baseUrl"])
+            myclient = Client(decrypt(userData["email"], self.key),decrypt(userData["password"],self.key),userData["apiKey"],general_data["baseUrl"])
             await myclient.init_session()
             self.assertNotEqual(myclient._session._token, None)
             with self.subTest(msg="Test chargepoints"):

@@ -3,6 +3,7 @@ from chargeampsclient import Client
 from chargeampscfgparser import ChargeAmpsCfgParser
 from xlsxresultwriter import XlsxResult
 from datetime import datetime
+from utils.utils import get_or_create_encryption_key, decrypt
 
 app = Flask(__name__)
 
@@ -10,6 +11,7 @@ app = Flask(__name__)
 @app.route("/", methods=["GET", "POST"])
 async def index():
     global myclient 
+    key = get_or_create_encryption_key()
     if request.method == "POST":
         rfid = request.form["rfid"]
         start_date =  datetime.strptime(request.form["start_date"], "%Y-%m-%d")
@@ -18,7 +20,7 @@ async def index():
         cfgParser = ChargeAmpsCfgParser("mycfg.ini")
         userData = cfgParser.get_user_data()
         general_data= cfgParser.get_general_data()
-        myclient = Client(userData["email"],userData["password"],userData["apiKey"],general_data["baseUrl"])
+        myclient = Client(decrypt(userData["email"],key),decrypt(userData["password"],key),userData["apiKey"],general_data["baseUrl"])
         await myclient.init_session()
         chargePoints = await myclient.get_chargepoints()
         if chargePoints:
@@ -38,10 +40,11 @@ async def index():
 
 @app.route("/get_rfid_tags", methods=["POST"])
 async def get_rfid_tags():
+    key = get_or_create_encryption_key()
     cfgParser = ChargeAmpsCfgParser("mycfg.ini")
     userData = cfgParser.get_user_data()
     general_data= cfgParser.get_general_data()
-    myclient = Client(userData["email"],userData["password"],userData["apiKey"],general_data["baseUrl"])
+    myclient = Client(decrypt(userData["email"],key),decrypt(userData["password"],key),userData["apiKey"],general_data["baseUrl"])
     await myclient.init_session()
     chargePoints = await myclient.get_chargepoints()
     if chargePoints:
