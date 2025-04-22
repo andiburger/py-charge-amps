@@ -8,3 +8,4 @@ ciso8601
 dataclasses_json
 cryptography
 python-dotenv
+marshmallow

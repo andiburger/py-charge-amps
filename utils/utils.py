@@ -2,6 +2,33 @@ from cryptography.fernet import Fernet
 import os
 from dotenv import load_dotenv
 
+from dataclasses import field
+from datetime import datetime
+
+from ciso8601 import parse_datetime
+from dataclasses_json import config
+from marshmallow import fields
+
+
+def datetime_encoder(x: datetime | None) -> str | None:
+    return datetime.isoformat(x) if x is not None else None
+
+
+def datetime_decoder(x: str | None) -> datetime | None:
+    return parse_datetime(x) if x is not None else None
+
+
+def datetime_field():
+    return field(
+        default=None,
+        metadata=config(
+            encoder=datetime_encoder,
+            decoder=datetime_decoder,
+            mm_field=fields.DateTime(format="iso"),
+        ),
+    )
+
+
 # Key generieren
 def generate_key():
     """Generates a Fernet key for encryption/decryption."""

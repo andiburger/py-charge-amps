@@ -1,5 +1,5 @@
 from datetime import datetime
-from utils import datetime_field
+from utils.utils import datetime_field
 from enum import Enum
 
 from dataclasses import dataclass

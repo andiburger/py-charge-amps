@@ -12,8 +12,6 @@ import jwt
 from datetime import datetime
 from urllib.parse import urljoin
 
-from utils import datetime_field
-
 from chargeampsdata import (UserStatus,ChargePointConnector, 
                             ChargePoint, ChargingSession, ChargePointSettings, 
                             ChargePointConnectorSettings, ChargePointPartner, 
