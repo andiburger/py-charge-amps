@@ -106,3 +106,46 @@ docker run -p 5000:5000 -v $(pwd)/mycfg.ini:/app/mycfg.ini py-charge-amps
 ## License
 
 MIT License. See LICENSE file for details.
+
+## 🔧 Configuration File Generator
+
+This script provides an interactive way to generate a secure `cfg.ini` configuration file. It encrypts sensitive fields like email and password before saving, making it suitable for use in version-controlled test environments.
+
+### 📄 File: `utils/cfg_file_generator.py`
+
+### ✅ Features
+
+- Interactive prompts for all configuration values
+- Secure input (hidden) for password and API key
+- Encryption of email and password using Fernet symmetric encryption
+- Auto-generates encryption key if not already set in `.env`
+- Writes all data to a standard INI file (`cfg.ini` by default)
+
+### 🚀 Usage
+
+Run the script from the command line:
+
+```bash
+python utils/cfg_file_generator.py
+```
+
+### 🔐 Encryption Key Handling
+- If EMAIL_ENCRYPTION_KEY is not found in your .env file, it will be auto-generated and saved to .env.
+- Make sure to never commit your .env file to version control if it contains production keys.
+
+### 📁 Sample Output (cfg.ini)
+
+```ini
+[USERDATA]
+email = gAAAAABk...
+password = gAAAAABk...
+apiKey = your-api-key
+
+[GENERAL]
+baseUrl = https://api.chargeamps.com
+pricekWh = 0.30
+```
+
+### ⚠️ Notes
+- Decryption must be done using the same key stored in .env.
+- Only the apiKey is stored in plaintext by design—modify the script if you’d like to encrypt that too.
