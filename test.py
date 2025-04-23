@@ -4,6 +4,51 @@ from xlsxresultwriter import XlsxResult
 from utils.utils import get_or_create_encryption_key, decrypt
 
 import unittest
+from unittest.mock import patch, mock_open
+import configparser
+
+from utils.cfg_file_generator import prompt_cfg_interactive
+
+
+class TestCfgFileGenerator(unittest.TestCase):
+    @patch("builtins.input")
+    @patch("getpass.getpass")
+    @patch("utils.cfg_file_generator.encrypt")
+    @patch("utils.cfg_file_generator.get_or_create_encryption_key")
+    @patch("builtins.open", new_callable=mock_open)
+    def test_prompt_cfg_interactive(
+        self, mock_file, mock_get_key, mock_encrypt, mock_getpass, mock_input
+    ):
+        # Simulate user input
+        mock_input.side_effect = [
+            "test@example.com",  # email input
+            "",  # baseUrl (default used)
+            "0.25",  # price per kWh
+            "test_cfg.ini"  # file path
+        ]
+        mock_getpass.side_effect = [
+            "supersecret",  # password
+            "apikey123",    # api key
+        ]
+
+        mock_get_key.return_value = b"fakekey"
+        mock_encrypt.side_effect = lambda val, key: f"ENCRYPTED({val})"
+
+        # Run the function
+        prompt_cfg_interactive()
+
+        # Get the written content
+        handle = mock_file()
+        written_content = "".join(call.args[0] for call in handle.write.call_args_list)
+        config = configparser.ConfigParser()
+        config.read_string(written_content)
+
+        self.assertEqual(config["USERDATA"]["email"], "ENCRYPTED(test@example.com)")
+        self.assertEqual(config["USERDATA"]["password"], "ENCRYPTED(supersecret)")
+        self.assertEqual(config["USERDATA"]["apiKey"], "apikey123")
+        self.assertEqual(config["GENERAL"]["baseUrl"], "https://api.chargeamps.com")
+        self.assertEqual(config["GENERAL"]["pricekWh"], "0.25")
+
 
 class TestCfgLoader(unittest.TestCase):
 
