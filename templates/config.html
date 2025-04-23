@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Config File</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2em;
+      background-color: #f2f2f2;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 1em;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.6em;
+      margin-top: 0.3em;
+    }
+
+    button {
+      margin-top: 2em;
+      width: 100%;
+      padding: 0.8em;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Create Configuration File</h2>
+    <form method="POST" action="/generate_cfg">
+      <label for="email">Email</label>
+      <input type="text" id="email" name="email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+
+      <label for="api_key">API Key</label>
+      <input type="text" id="api_key" name="api_key" required>
+
+      <button type="submit">Generate cfg.ini</button>
+    </form>
+  </div>
+</body>
+</html>

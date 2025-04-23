@@ -3,7 +3,9 @@ from chargeampsclient import Client
 from chargeampscfgparser import ChargeAmpsCfgParser
 from xlsxresultwriter import XlsxResult
 from datetime import datetime
-from utils.utils import get_or_create_encryption_key, decrypt
+from utils.utils import get_or_create_encryption_key, decrypt, encrypt
+import configparser
+
 
 app = Flask(__name__)
 
@@ -54,6 +56,37 @@ async def get_rfid_tags():
         return jsonify({"tags": rfid_tags})
     await myclient.close_session()
     return jsonify({"error": "No charge points found."})
+
+@app.route("/config", methods=["GET"])
+def show_config_form():
+    return render_template("config.html")
+
+
+@app.route("/generate_cfg", methods=["POST"])
+def generate_cfg():
+    email = request.form["email"]
+    password = request.form["password"]
+    api_key = request.form["api_key"]
+
+    key = get_or_create_encryption_key()
+    encrypted_email = encrypt(email, key)
+    encrypted_password = encrypt(password, key)
+
+    config = configparser.ConfigParser()
+    config["USERDATA"] = {
+        "email": encrypted_email,
+        "password": encrypted_password,
+        "apiKey": api_key
+    }
+    config["GENERAL"] = {
+        "baseUrl": "https://api.chargeamps.com",
+        "pricekWh": "0.30"
+    }
+
+    with open("cfg.ini", "w") as configfile:
+        config.write(configfile)
+
+    return "✅ cfg.ini was created successfully!"
 
 if __name__ == "__main__":
     app.run(debug=True)
