@@ -12,7 +12,6 @@ A Flask-based web application for retrieving and exporting charging session data
 ## Requirements
 
 - Python 3.8+
-- A `mycfg.ini` configuration file containing your Charge Amps API credentials and base URL.
 
 ## Installation
 
