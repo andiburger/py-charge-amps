@@ -48,18 +48,33 @@
 </head>
 <body>
   <div class="container">
-    <h2>Create Configuration File</h2>
-    <form method="POST" action="/generate_cfg">
-      <label for="email">Email</label>
-      <input type="text" id="email" name="email" required>
+    {% if success %}
+      <h2>Configuration Saved</h2>
+      <p>Your configuration file was generated successfully.</p>
+    {% else %}
+      <h2>Create Configuration File</h2>
+      <form method="POST" action="/generate_cfg">
+        <label for="email">Email</label>
+        <input type="text" id="email" name="email" required>
 
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
 
-      <label for="api_key">API Key</label>
-      <input type="text" id="api_key" name="api_key" required>
+        <label for="api_key">API Key</label>
+        <input type="text" id="api_key" name="api_key" required>
 
-      <button type="submit">Generate cfg.ini</button>
+        <label for="base_url">Base URL</label>
+        <input type="text" id="base_url" name="base_url" placeholder="https://eapi.charge.space" required>
+
+        <label for="price_kwh">Price per kWh (in cents)</label>
+        <input type="text" id="price_kwh" name="price_kwh" placeholder="e.g. 30" required>
+
+        <button type="submit">Generate cfg.ini</button>
+      </form>
+    {% endif %}
+
+    <form action="/" method="get" style="margin-top: 1em;">
+      <button type="submit" style="background-color: #007BFF;">Back to Home</button>
     </form>
   </div>
 </body>

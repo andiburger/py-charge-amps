@@ -27,8 +27,12 @@ def prompt_cfg_interactive():
 
     # GENERAL section
     print("\n⚙️ GENERAL section:")
-    base_url = input("Enter base URL [https://api.chargeamps.com]: ").strip() or "https://api.chargeamps.com"
-    price_kwh = input("Enter price per kWh (e.g. 0.30): ").strip()
+    base_url = input("Enter base URL (e.g. https://eapi.charge.space): ").strip()
+    while not base_url.startswith("https"):
+        base_url = input("❗ Please enter a valid base URL (must start with http/https): ").strip()
+    price_kwh = input("Enter price per kWh in cents (e.g. 30): ").strip()
+    while not price_kwh.isdigit():
+        price_kwh = input("❗ Please enter a numeric value for price per kWh (in cents): ").strip()
 
     config["GENERAL"] = {
         "baseUrl": base_url,

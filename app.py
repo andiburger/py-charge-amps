@@ -19,7 +19,7 @@ async def index():
         start_date =  datetime.strptime(request.form["start_date"], "%Y-%m-%d")
         end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d")
         print(f"RFID: {rfid}, Start: {start_date}, End: {end_date}")
-        cfgParser = ChargeAmpsCfgParser("mycfg.ini")
+        cfgParser = ChargeAmpsCfgParser("cfg.ini")
         userData = cfgParser.get_user_data()
         general_data= cfgParser.get_general_data()
         myclient = Client(decrypt(userData["email"],key),decrypt(userData["password"],key),userData["apiKey"],general_data["baseUrl"])
@@ -43,7 +43,7 @@ async def index():
 @app.route("/get_rfid_tags", methods=["POST"])
 async def get_rfid_tags():
     key = get_or_create_encryption_key()
-    cfgParser = ChargeAmpsCfgParser("mycfg.ini")
+    cfgParser = ChargeAmpsCfgParser("cfg.ini")
     userData = cfgParser.get_user_data()
     general_data= cfgParser.get_general_data()
     myclient = Client(decrypt(userData["email"],key),decrypt(userData["password"],key),userData["apiKey"],general_data["baseUrl"])
@@ -79,8 +79,8 @@ def generate_cfg():
         "apiKey": api_key
     }
     config["GENERAL"] = {
-        "baseUrl": "https://api.chargeamps.com",
-        "pricekWh": "0.30"
+        "baseUrl": "https://eapi.charge.space",
+        "pricekWh": "27.43"  # Example price per kWh
     }
 
     with open("cfg.ini", "w") as configfile:
@@ -89,4 +89,4 @@ def generate_cfg():
     return "✅ cfg.ini was created successfully!"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
