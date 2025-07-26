@@ -2,6 +2,7 @@ import configparser
 import getpass
 from utils import encrypt, get_or_create_encryption_key
 import os
+from dotenv import load_dotenv
 
 def prompt_cfg_interactive():
     """
@@ -10,6 +11,10 @@ def prompt_cfg_interactive():
     print("📦 Let's create your cfg.ini configuration file!\n")
 
     config = configparser.ConfigParser()
+    load_dotenv()
+    env_path = os.getenv("ENV_PATH", "/data/.env")
+    cfg_dir = os.path.dirname(env_path)
+    default_path = os.path.join(cfg_dir, "cfg.ini")
 
     # USERDATA section
     print("🔐 USERDATA section:")
@@ -40,7 +45,6 @@ def prompt_cfg_interactive():
     }
 
     # File path
-    default_path = "cfg.ini"
     path = input(f"\n📁 Where to save the config? [default: {default_path}]: ").strip() or default_path
 
     # Save to file

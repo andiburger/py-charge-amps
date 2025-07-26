@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  py-charge-amps:
+    image: py-charge-amps:latest
+    container_name: py-charge-amps
+    build: .
+    ports:
+      - "5000:5000"  # Host:Container
+    volumes:
+      - ./config:/data  # persistiert cfg.ini und .env
+    environment:
+      - ENV_PATH=/data/.env
+    restart: unless-stopped

@@ -35,6 +35,8 @@ def generate_key():
     return Fernet.generate_key()
 
 # encrypt E-Mail
+
+
 def encrypt(email: str, key: bytes) -> str:
     """Encrypts an email address using the provided key.
     Args:
@@ -45,6 +47,7 @@ def encrypt(email: str, key: bytes) -> str:
     """
     fernet = Fernet(key)
     return fernet.encrypt(email.encode()).decode()
+
 
 # decrypt E-Mail
 def decrypt(token: str, key: bytes) -> str:
@@ -64,7 +67,8 @@ def get_or_create_encryption_key():
     If the key already exists in the .env file, it will be returned.
     If not, a new key will be generated and saved to the .env file.
     """
-    load_dotenv()
+    env_path = os.getenv("ENV_PATH", os.path.join(os.path.dirname(__file__), '..', '.env'))
+    load_dotenv(dotenv_path=env_path)
     key = os.getenv("EMAIL_ENCRYPTION_KEY")
 
     if key:
@@ -74,7 +78,6 @@ def get_or_create_encryption_key():
     key = Fernet.generate_key().decode()
 
     # Read existing .env content
-    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
     if os.path.exists(env_path):
         with open(env_path, "r") as f:
             lines = f.readlines()

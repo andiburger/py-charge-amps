@@ -5,6 +5,12 @@ from xlsxresultwriter import XlsxResult
 from datetime import datetime
 from utils.utils import get_or_create_encryption_key, decrypt, encrypt
 import configparser
+import os
+from dotenv import load_dotenv
+
+env_path = os.getenv("ENV_PATH", "/data/.env")
+load_dotenv(env_path)
+CFG_PATH = os.path.join(os.path.dirname(env_path), "cfg.ini")
 
 
 app = Flask(__name__)
@@ -19,7 +25,7 @@ async def index():
         start_date =  datetime.strptime(request.form["start_date"], "%Y-%m-%d")
         end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d")
         print(f"RFID: {rfid}, Start: {start_date}, End: {end_date}")
-        cfgParser = ChargeAmpsCfgParser("cfg.ini")
+        cfgParser = ChargeAmpsCfgParser(CFG_PATH)
         userData = cfgParser.get_user_data()
         general_data= cfgParser.get_general_data()
         myclient = Client(decrypt(userData["email"],key),decrypt(userData["password"],key),userData["apiKey"],general_data["baseUrl"])
@@ -43,7 +49,7 @@ async def index():
 @app.route("/get_rfid_tags", methods=["POST"])
 async def get_rfid_tags():
     key = get_or_create_encryption_key()
-    cfgParser = ChargeAmpsCfgParser("cfg.ini")
+    cfgParser = ChargeAmpsCfgParser(CFG_PATH)
     userData = cfgParser.get_user_data()
     general_data= cfgParser.get_general_data()
     myclient = Client(decrypt(userData["email"],key),decrypt(userData["password"],key),userData["apiKey"],general_data["baseUrl"])
@@ -83,10 +89,11 @@ def generate_cfg():
         "pricekWh": "27.43"  # Example price per kWh
     }
 
-    with open("cfg.ini", "w") as configfile:
+    with open(CFG_PATH, "w") as configfile:
         config.write(configfile)
 
     return "✅ cfg.ini was created successfully!"
+
 
 if __name__ == "__main__":
     app.run(debug=True)
