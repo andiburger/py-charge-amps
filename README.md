@@ -55,7 +55,7 @@ docker build -t py-charge-amps .
 
 This builds the image using:
 - Build stage: Installs all Python dependencies into a minimal install directory using Alpine Linux.
-- inal stage: Copies only the necessary files and dependencies into the final image.
+- Final stage: Copies only the necessary files and dependencies into the final image.
 
 ## Run the container
 
