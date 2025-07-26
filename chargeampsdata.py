@@ -5,6 +5,7 @@ from enum import Enum
 from dataclasses import dataclass
 from dataclasses_json import LetterCase, dataclass_json
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointConnector:
@@ -12,6 +13,7 @@ class ChargePointConnector:
     charge_point_id: str
     connector_id: int
     type: str
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
@@ -26,6 +28,7 @@ class ChargePoint:
     hardware_version: str
     connectors: list[ChargePointConnector]
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargingSession:
@@ -36,7 +39,7 @@ class ChargingSession:
     user_id: str
     rfid: str
     rfidDec: str
-    rfidDecReverse: str 
+    rfidDecReverse: str
     organisationId: str | None
     session_type: str
     total_consumption_kwh: float
@@ -44,7 +47,8 @@ class ChargingSession:
     externalId: str | None
     start_time: datetime | None = datetime_field()
     end_time: datetime | None = datetime_field()
-    
+
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointSettings:
@@ -52,6 +56,7 @@ class ChargePointSettings:
     id: str
     dimmer: str
     down_light: bool
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
@@ -64,6 +69,7 @@ class ChargePointConnectorSettings:
     cable_lock: bool
     max_current: float | None = None
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointPartner:
@@ -74,6 +80,7 @@ class ChargePointPartner:
     email: str
     phone: str
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointMeasurement:
@@ -81,6 +88,7 @@ class ChargePointMeasurement:
     phase: str
     current: float
     voltage: float
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
@@ -95,6 +103,7 @@ class ChargePointConnectorStatus:
     end_time: datetime | None = datetime_field()
     session_id: str | None = None
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointStatus:
@@ -103,6 +112,7 @@ class ChargePointStatus:
     status: str
     connector_statuses: list[ChargePointConnectorStatus]
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointScheduleOverrideStatus:
@@ -110,11 +120,12 @@ class ChargePointScheduleOverrideStatus:
     connector_id: int
     is_overriden: bool
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointSchedule:
     """Class representing a schedule for a charge point."""
-    id:  int
+    id: int
     chargePointId: str
     name: str
     active: bool
@@ -132,11 +143,13 @@ class ChargePointSchedule:
     sunday: bool
     connectorIdList: str
 
+
 class UserStatus(Enum):
     """Enum representing the status of a user."""
     Valid = 1
     Invaild = 2
     Undef = 3
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
@@ -146,6 +159,7 @@ class RFIDTag:
     rfid: str
     rfidDec: str | None
     rfidDecReverse: str | None
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
@@ -159,6 +173,7 @@ class ChargeAmpsUser:
     rfidTags: list[RFIDTag]
     userStatus: str
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class StartAuth:
@@ -168,6 +183,7 @@ class StartAuth:
     rfid: str
     external_transaction_id: str
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
 class ChargePointAuth:
@@ -175,6 +191,7 @@ class ChargePointAuth:
     chargePointId: str
     password: str
     chargePointName: str
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass(frozen=True)
