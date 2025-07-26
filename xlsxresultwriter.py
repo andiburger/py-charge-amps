@@ -34,6 +34,13 @@ class XlsxResult:
             'bottom': True,
             'border': 2
         })
+        header_format_euros = workbook.add_format({
+            'align': 'center',
+            'num_format': '#,##0.00€',
+            'bold': True,
+            'bottom': True,
+            'border': 2
+        })
         cell_format = workbook.add_format({
             'align': 'center',
             'bold': False,
@@ -78,7 +85,7 @@ class XlsxResult:
             idx += 1
         worksheet.write_string(row, 5, "Total Costs", header_format)
         worksheet._write_formula(row, 6, "=SUM(G2:G" + str(idx - 1) + ")",
-                                 header_format)
+                                 header_format_euros)
 
         workbook.close()
         output.seek(0)
